@@ -11,10 +11,10 @@ Using a Somfy remote connected to an ESP8266 with ESPHome software we can now co
 
 ## Description
 
-Somfy (screens) have two communication protocols; RTS using RFxxx and SomfyIO using encrypted communication. When I bought my screens I choose SomfyIO. My house has three screens; each with it's own remote.
+Somfy (screens) have [two communication protocols](https://www.somfy.nl/over-somfy/technologieen-en-compatibiliteit); RTS using RFX-433,92 Mhz and [IO-homecontrol](https://www.somfy.nl/ondersteuning/somfy-motoren/io-homecontrol) using encrypted communication. When I bought my screens I choose SomfyIO. My house has three screens; each with it's own remote.
 Currently it is not possible to communicate directly (to pretend using a remote).
 
-With the help of an example of [xx on Hackster](website) I bypassed the protocol using an original 4-channel-remote.
+With the help of may examples but most important [Beejayf's project SomfyDuino on Hakster.io](https://www.hackster.io/beejayf/somfyduino-io-3d8283) I bypassed the protocol using an original 4-channel-remote.
 The way it works is that pussing a button on the remote is faked by connecting wires to the remote-buttons.
 The wires are reused from an old desktop-PSU; enough wires combined in a bundle.
 
@@ -77,25 +77,178 @@ Using ESPHome on the ESP has the advantage it is easy connected to my domotica-s
 - ESP8266
 - Wifi-access
 - Enough IO-ports
-- 'make connection to GND' -> normal HIGH = 3.3V
-- normal HIGH = extra resistor & blue LED
-- extra sensors; LDR, RGB, PIR & Buzzer (no temp & hum this time)
+
+### Connections 
+
+#### Somfy connections
+
+ - Somfy Battery(+)  to ESP - 3V3
+ - Somfy Battery(-)  to ESP - GND
+ - Somfy "SELECT"    to ESP - GPIO03 = RX
+ - Somfy "UP"        to ESP - GPIO14 - D5
+ - Somfy "My" / Hold to ESP - GPIO12 - D6
+ - Somfy "DOWN"      to ESP - GPIO13 - D7
+ 
+ Hardware each pin is 'active high' and not only connected to somfy but also by small blue LED and xx Ohm resistor to GND
+ In ESPHome each the four pins gets a switch, each switch becomes a button
+ By activating the button the pin & switch is set low for 500ms and then set high again...thus simulating a short hardware button press on the remote
+ In HomeAssistant we see all switches and buttons
+ 
+#### Other connections
+
+RGB LED (PL9823)
+ - (short) pin 1 Data In (DI) to ESP - GPIO00 = D3
+ - (short) pin 2 V+ (5V)      to ESP - 5V
+ - (long)  pin 3 GND          to ESP - GND
+ - (long)  pin 4 Data Out (DO) not connected
+ - has chipset WS2811
+ - In ESPHome 'fastled_clockless' needed & old framework 2.7.3 needed
+ 
+Internal LED (in WemosD1 mini Pro)
+ - connected to GPIO02 = D4
+ 
+LDR-restistor
+ - one pin of LDR   is connected to ESP - A0 (Analog input)
+ - other pin of LDR is connected to ESP - GND
+ - A0 is with 20kOhm resistor connected to ESP - 3V3
+ - This is a voltage-divider. Max input of A0 is 1V
+ 
+PIR (motion)
+ - pin 1 UI = OUT to ESP - GPIO16 = D0
+ - pin 2 GND      to ESP - GND
+ - pin 3 VCC      to ESP - 3V3
+ 
+Buzzer (passive buzzer, connected to software PWM)
+ - + to ESP - GPIO15 = D8
+ - - to ESP - GND
+ - In ESPHome and HomeAssistant addressed by RTTTL (=Ring Tone Text Transfer Language)
+ 
 
 ### ESPHome software
 
-- generated from within HomeAssistant
-- all sensors connected
-- to remote: switch + button
-- extra status information: uptime, wifi info
+The WemosD1 mini pro with ESP8266-chip has ESPHome firmware installed
+Pins are connected to a 'switch' and made into a 'button'
+Besides the code for the somfy pins there is also code for all the other pins like the RGB led, internal led, PIR and Buzzer
+Furthermore ESPHome gives extra information like uptime and wifi information
+
+Initialization part to display nice names ESPHome -> HomeAssistant -> user
+```
+substitutions:
+  devicename: Somfy
+```
+
+
+Part to make switch connected to hardware pin
+```
+switch:
+- platform: gpio
+  pin: 3  #GPIO3 / RX - connected to Somfy CHANNEL
+  id: pin3
+  restore_mode: ALWAYS_ON   # start HIGH
+- platform: gpio
+  pin: 14  #GPIO14 / D5 - connected to Somfy UP
+  id: pin14
+  restore_mode: ALWAYS_ON   # start HIGH
+- platform: gpio
+  pin: 12  #GPIO12 / D6 - connected to Somfy STOP
+  id: pin12
+  restore_mode: ALWAYS_ON   # start HIGH
+- platform: gpio
+  pin: 13  #GPIO13 / D7 - connected to Somfy DOWN
+  id: pin13
+  restore_mode: ALWAYS_ON   # start HIGH
+```
+
+and
+```
+# switch functionality
+# LED is on if switch is turned off !
+- platform: template
+  name: ${devicename} CHANNEL-RX-GPIO3  # change name later to functionality
+  optimistic: yes
+  id: pinnetje3
+  turn_on_action:
+  - switch.turn_off: pin3   # negative: pin=off => output=low (=> test-led=off)
+  turn_off_action:
+  - switch.turn_on: pin3    # pin=on => output=high  (=> test-led=on)
+- platform: template
+  name: ${devicename} UP-D5-GPIO14   # change name later to functionality
+  optimistic: yes
+  id: pinnetje14
+  turn_on_action:
+  - switch.turn_off: pin14   # negative: pin=off => output=low (=> test-led=off)
+  turn_off_action:
+  - switch.turn_on: pin14    # pin=on => output=high  (=> test-led=on)
+- platform: template
+  name: ${devicename} STOP-D6-GPIO12   # change name later to functionality
+  optimistic: yes
+  id: pinnetje12
+  turn_on_action:
+  - switch.turn_off: pin12   # negative: pin=off => output=low (=> test-led=off)
+  turn_off_action:
+  - switch.turn_on: pin12    # pin=on => output=high  (=> test-led=on)
+- platform: template
+  name: ${devicename} DOWN-D7-GPIO13   # change name later to functionality
+  optimistic: yes
+  id: pinnetje13
+  turn_on_action:
+  - switch.turn_off: pin13   # negative: pin=off => output=low (=> test-led=off)
+  turn_off_action:
+  - switch.turn_on: pin13    # pin=on => output=high  (=> test-led=on)
+
+```
+
+Emulate a button
+```
+# button functionality
+# Button is pushed low for 0,5 sec
+button:
+  - platform: template
+    name: ${devicename} Button-CHANNEL-RX-IO3
+    id: wemosd1_rx_button
+    icon: "mdi:gesture-tap-button"
+    on_press:
+      - logger.log: "Knop CHANNEL ingedrukt = output RX even LOW = CHANNEL"
+      - switch.turn_off: pin3   # negative: pin=off => output low
+      - delay: 500ms 
+      - switch.turn_on: pin3    # pin=on => output high
+  - platform: template
+    name: ${devicename} Button-UP-D5-IO14
+    id: wemosd1_d5_button
+    icon: "mdi:gesture-tap-button"
+    on_press:
+      - logger.log: "Knop UP ingedrukt = output D5 even LOW = UP"
+      - switch.turn_off: pin14   # negative: pin=off => output low
+      - delay: 500ms 
+      - switch.turn_on: pin14    # pin=on => output high
+  - platform: template
+    name: ${devicename} Button-STOP-D6-IO12
+    id: wemosd1_d6_button
+    icon: "mdi:gesture-tap-button"
+    on_press:
+      - logger.log: "Knop STOP ingedrukt = output D6 even LOW = STOP"
+      - switch.turn_off: pin12   # negative: pin=off => output low
+      - delay: 500ms 
+      - switch.turn_on: pin12    # pin=on => output high
+  - platform: template
+    name: ${devicename} Button-DOWN-D7-IO13
+    id: wemosd1_d7_button
+    icon: "mdi:gesture-tap-button"
+    on_press:
+      - logger.log: "Knop DOWN ingedrukt = output D7 even LOW = DOWN"
+      - switch.turn_off: pin13   # negative: pin=off => output low
+      - delay: 500ms 
+      - switch.turn_on: pin13    # pin=on => output high
+```
 
 ### HomeAssistant code
 
-- entities from ESP vissable
-- manual use button = 500m low
+- entities from ESP visable
+- push button - watching the remote
 - scripts to 'push' more buttons in a row
 - automation when to lower the screens
 
-## Getting started
+## Development to a working situation
 
 ### Breadboard try-out
 
@@ -164,16 +317,32 @@ Thanks to all who helped inspire this project
 
 ### See also
 
-- [A simple README.md template](https://gist.github.com/DomPizzie/7a5ff55ffa9081f2de27c315f5018afc)
-- [A template to make good README.md](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-- [A sample README for all your GitHub projects](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
-- [A simple README.md template to kickstart projects](https://github.com/me-and-company/readme-template)
+- Beejayf's project SomfyDuino
+     - [on arduino.cc](https://create.arduino.cc/projecthub/beejayf/somfyduino-io-3d8283)
+	 - [on Hackster.io](https://www.hackster.io/beejayf/somfyduino-io-3d8283)
+- [Tim Alston on twitter (only some pictures)](https://mobile.twitter.com/TimAlston/status/1340330866023813120)
+- [Mention on dutch 'Tweakers' forum of Beejayf's SomfyDuino](https://gathering.tweakers.net/forum/list_messages/1982854)
+- [First try and asking for help of Celaeno1 & Hakan using OpenHab)(https://community.openhab.org/t/solved-somfy-io-rollershutter-motors-which-system-is-best-for-using-with-oh2/81929/12)
+- [Github repro of smslabsbr for SomfyRTS](https://github.com/dmslabsbr/esphome-somfy)
+- [Github repro of imicknl for connection with the use of Tohama](https://github.com/imicknl/ha-tahoma)
+
+### To-do in this Github explaination
+
+- [x] pinout connection 
+- [x] ESPHome code
+- [x] References to found examples
+- [ ] more explaining code
+- [ ] upload yaml files
+- [ ] share this github on social media 
+- [ ] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
 
 ### To-do
 
-- [ ] Still need to do this
-- [ ] ~~Decided not to do this~~
-- [x] Done!
+- [x] Working with a prototype-board
+- [ ] ~~Redesign and use an dedicated pcb~~
+- [ ] ~~Temperature & Humidity sensor~~
+- [ ] Design and print a nice 3D case
+
 
 ### License
 
