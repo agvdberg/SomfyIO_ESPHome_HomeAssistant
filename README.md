@@ -25,7 +25,10 @@ In my house I plan to put a domotica-sensor in each room, so I add some other se
 
 Using ESPHome on the ESP has the advantage it is easy connected to my domotica-software HomeAssistant. In HomeAssistant I made some automations and scripts to push a message to the ESP. 
 
-### Needed
+
+## Setup
+
+### Needed hardware
 
 - Somfy remote 				(like the Somfy SITUO 5 IO Pure)
 - cable with 6 wires		(i cut it from an old Desktop-PSU)
@@ -33,10 +36,20 @@ Using ESPHome on the ESP has the advantage it is easy connected to my domotica-s
 - [ESPHome software](https://esphome.io/)  		(to program the ESP8266)
 - [HomeAssistant software](https://www.home-assistant.io/)	(to control the screens, on any hardware)
 - Solder board, tin, solder iron
-- 4 20Ohm resistors
+- 4 200 Ohm resistors
 - 4 small & simple LED's 
 - 6 wire connectors with screw (to connect the cable to the solderboard)
-- extra hardware like an RGB-led, PIR and buzzer are optional off course
+- extra hardware like an LDR, RGB-led, PIR and buzzer are optional off course
+
+
+### Before soldering
+
+You must program the Somfy remote before taking it out of the case and doing any soldering.
+Program the remote to use your screens according to the manual.
+Now the remote is communicating to the right screen.
+You can use the fysical buttons 'channel', 'up', 'down' and 'my'/stop
+The 'program'-button on the back of the remote is not connected and not usable after soldering
+
 
 ### The correct remote
 
@@ -44,6 +57,18 @@ The old remote, the Somfy SITUO 5 IO Pure is easier to solder wires to.
 The new remote has smd components were soldering wires is more advanced
 The remote had 4 channels. There are SMD-leds on the remote (on th eleft upper corner) to give information which screen is adressed.
 My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. They are not used in this project.
+
+
+### The way it works
+
+The way the remote is used is to simulate a button press (and let the remote do all the srambled communications)
+The button press is simulated by connecting the 'copper circle' to ground.
+On the remote-board the dot in the middle of the copper circle is connected to ground
+That means on no-press the pin connected to the copper circle must kept high
+I use a high resistor (including a small blue led) to connect the high-pin to ground. It draws only a few mA.
+My ESP is connected to normal 230V->5V plug so i don't need to care about draining any battery.
+Extra bonus is that i see on the blue led if the pinout is high or low.
+
 
 ### Pictures of the remote
 
@@ -53,14 +78,6 @@ My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. The
   </kbd>
     
   Somfy SITUO 5 IO Pure
-</div>
-
-<div align="center">
-  <kbd>
-    <img src="images/SomfyIO_ESPHome_AGvdBerg_4-Zelf solderen_2.jpg" />
-  </kbd>
-    
-  Remote with soldered wires
 </div>
 
 <div align="center">
@@ -81,11 +98,20 @@ My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. The
 
 <div align="center">
   <kbd>
+    <img src="images/SomfyIO_ESPHome_AGvdBerg_4-Zelf solderen_2.jpg" />
+  </kbd>
+    
+  Remote with soldered wires
+</div>
+
+<div align="center">
+  <kbd>
     <img src="images/SomfyIO_ESPHome_AGvdBerg_1-Remote te modern_1.jpg" />
   </kbd>
     
   Newest remote has SMD = much harder to solder
 </div>
+
 
 ### Prototype board with WemosD1 mini Pro
 
@@ -93,61 +119,30 @@ My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. The
 - Wifi-access
 - Enough IO-ports
 
+
 ### Connections 
 
 #### Somfy connections
 
- - Somfy Battery(+)  to ESP - 3V3
- - Somfy Battery(-)  to ESP - GND
- - Somfy "SELECT"    to ESP - GPIO03 = RX
- - Somfy "UP"        to ESP - GPIO14 - D5
- - Somfy "My" / Hold to ESP - GPIO12 - D6
- - Somfy "DOWN"      to ESP - GPIO13 - D7
+| Somfy remote  | ESP - WemosD1 mini Pro |
+|---------------|------------------------|
+| Battery(+)    | 3V3                    |
+| Battery(-)    | GND                    |
+| "SELECT"      | GPIO03 = RX            |
+| "UP"          | GPIO14 - D5            |
+| "My" / Hold   | GPIO12 - D6            |
+| "DOWN"        | GPIO13 - D7            |
  
- Hardware each pin is 'active high' and not only connected to somfy but also by small blue LED and 20 Ohm resistor to GND
+ Hardware each pin is 'active high' and not only connected to somfy but also by small blue LED and 200 Ohm resistor to GND
  In ESPHome each the four pins gets a switch, each switch becomes a button
  By activating the button the pin & switch is set low for 500ms and then set high again...thus simulating a short hardware button press on the remote
  In HomeAssistant we see all switches and buttons
  
-#### Other connections - optional & has nothing to do with the Somfy Screens
 
-RGB LED (PL9823)
-
-| RGB LED (PL9823)           | ESP - WemosD1 mini Pro                                                                    |
-|----------------------------|-------------------------------------------------------------------------------------------|
-| (short) pin 1 Data In (DI) | TGPIO00 = D3                                          |
-| (short) pin 2 V+ (5V)                  | ESP - 5V                                 |
-| (long)  pin 3 GND                | ESP - GND |
-| (long)  pin 4 Data Out (DO)           | not connected |
-
- - has chipset WS2811
- - In ESPHome 'fastled_clockless' needed & old framework 2.7.3 needed
- 
-Internal LED (in WemosD1 mini Pro)
- - connected to GPIO02 = D4
- 
-LDR-restistor
- - one pin of LDR   is connected to ESP - A0 (Analog input)
- - other pin of LDR is connected to ESP - GND
- - A0 is with 20kOhm resistor connected to ESP - 3V3
- - This is a voltage-divider. Max input of A0 is 1V
- 
-PIR (motion)
- - pin 1 UI = OUT to ESP - GPIO16 = D0
- - pin 2 GND      to ESP - GND
- - pin 3 VCC      to ESP - 3V3
- 
-Buzzer (passive buzzer, connected to software PWM)
- - + to ESP - GPIO15 = D8
- - - to ESP - GND
- - In ESPHome and HomeAssistant addressed by RTTTL (=Ring Tone Text Transfer Language)
- 
-
-### ESPHome software
+### ESPHome software for the somfy remote
 
 The WemosD1 mini pro with ESP8266-chip has ESPHome firmware installed
 Pins are connected to a 'switch' and made into a 'button'
-Besides the code for the somfy pins there is also code for all the other pins like the RGB led, internal led, PIR and Buzzer
 Furthermore ESPHome gives extra information like uptime and wifi information
 
 Initialization part to display nice names ESPHome -> HomeAssistant -> user
@@ -260,6 +255,168 @@ button:
       - switch.turn_off: pin13   # negative: pin=off => output low
       - delay: 500ms 
       - switch.turn_on: pin13    # pin=on => output high
+```
+
+#### OPTIONAL - Other connections - This has nothing to do with the Somfy Screens
+
+The other perifials have nothing to do with the Somfy Screens.
+They are added by me to support extra information, room sensors and/or just for fun
+
+
+##### RGB LED (PL9823)
+
+| RGB LED (PL9823)            | ESP - WemosD1 mini Pro |
+|-----------------------------|------------------------|
+| (short) pin 1 Data In (DI)  | TGPIO00 = D3           |
+| (short) pin 2 V+ (5V)       | 5V                     |
+| (long)  pin 3 GND           | GND                    |
+| (long)  pin 4 Data Out (DO) | not connected          |
+
+ - has chipset WS2811
+ - In ESPHome 'fastled_clockless' & old framework 2.7.3 needed  (see code)
+ 
+code in ESPHome
+```
+esp8266:
+  board: d1_mini_pro
+
+  # Special downgrade to support fastled_clockless for RGBled PL9823
+  # see https://esphome.io/components/light/fastled.html
+  framework:
+    version: 2.7.4  
+
+light:
+  # RGB led PL9823
+  - platform: fastled_clockless
+    chipset: WS2811
+    pin: D3  # GPIO0 = D3 (FLASH)
+    num_leds: 1
+    rgb_order: RGB
+    name: ${devicename} RGBled
+```
+
+###### Internal LED (in WemosD1 mini Pro)
+
+ - connected to GPIO02 = D4
+ - because we can use it
+ - extra possibility to test function 'Home Assistant switch' 
+ - also used to give startup information, before connection to HomeAssistant is established
+
+code in ESPHome
+```
+esphome:
+  name: wemosd1-somfy
+
+  # do something on boot -> Blink two times
+  # default priority = 600 => most sensors are set up. Before 250 = Wifi is initialized
+  on_boot:
+    then:
+      - switch.turn_on: internal_pin    # turn on = inverted pin = on => led=on
+      - delay: 500ms 
+      - switch.turn_off: internal_pin   # turn off = inverted pin = off => led=off
+      - delay: 500ms 
+      - switch.turn_on: internal_pin    # turn on = inverted pin = on => led=on
+      - delay: 500ms 
+      - switch.turn_off: internal_pin   # turn off = inverted pin = off => led=off
+      - delay: 500ms 
+
+switch:
+- platform: gpio
+  pin: 
+    number: 2 #GPIO2 / D4 is internal_led_pin
+    inverted: true     # output low = pin off = led ON
+  id: internal_pin
+  restore_mode: ALWAYS_OFF   # start low = pin on = led OFF
+
+```
+ 
+##### LDR - resistor
+
+   +------ 3V3
+   |
+   R = 20kOhm
+   |
+   +------ pin A0   (Analog input)
+   |
+   LDR
+   |
+   +------ GND
+
+ - This is a voltage-divider. Max input of A0 is 1V
+
+code in ESPHome
+```
+sensor:
+  - platform: resistance
+    sensor: somfy_a0_sensor
+    configuration: DOWNSTREAM    ## LDR is connected to GND, UPSTREAM if connected to VCC
+    resistor: 20.0kOhm
+    name: ${devicename} LDR
+    
+  # Analog input from LDR
+  - platform: adc
+    id: somfy_a0_sensor
+    pin: A0
+    update_interval: 10s
+    name: ${devicename} A0 reading
+```
+
+##### PIR Motion sensor 
+
+| PIR             | ESP - WemosD1 mini Pro |
+|-----------------|------------------------|
+| pin 1 UI = OUT  | GPIO16 = D0            |
+| pin 2 GND       | GND                    |
+| pin 3 VCC       | 3V3                    |
+
+code in ESPHome
+```
+binary_sensor:
+  # PIR motion detection
+  - platform: gpio
+    pin: D0   # GPIO16 = D0
+    name: ${devicename} Motion
+    device_class: motion
+```
+
+
+##### Buzzer
+ 
+| PIR         | ESP - WemosD1 mini Pro |
+|-------------|------------------------|
+| positive    | GPIO15 = D8            |
+| negative    | GND                    |
+
+- passive buzzer
+- connected to software PWM on ESP
+- with the ESPHome-code there is a function-call ('service') generated in HomeAssistant which can play RTTTL-songs
+- mainly used to give a beep on start- and endpoint of the 'screen-down' and 'screen-up' scripts
+
+code in ESPHome
+```
+# Software-PWM on D2 for passive buzzer
+output:
+  - platform: esp8266_pwm
+    pin: D8
+    id: rtttl_out
+
+# RTTTL = Ring Tone Text Transfer Language
+# see https://esphome.io/components/rtttl.html
+rtttl:
+  output: rtttl_out
+  on_finished_playback:
+    - logger.log: 'Song ended!'
+
+# Generate API (for HomeAssistant) to play a 'song'/melody/tone
+api:
+  services:
+    - service: play_rtttl
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda 'return song_str;'
+
 ```
 
 ### HomeAssistant code
