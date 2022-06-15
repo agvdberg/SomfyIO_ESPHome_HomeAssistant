@@ -14,7 +14,7 @@ Using a Somfy remote connected to an ESP8266 with ESPHome software we can now co
 Somfy (screens) have [two communication protocols](https://www.somfy.nl/over-somfy/technologieen-en-compatibiliteit); RTS using RFX-433,92 Mhz and [IO-homecontrol](https://www.somfy.nl/ondersteuning/somfy-motoren/io-homecontrol) using encrypted communication. When I bought my screens I choose SomfyIO. My house has three screens; each with it's own remote.
 Currently it is not possible to communicate directly (to pretend using a remote).
 
-With the help of may examples but most important [Beejayf's project SomfyDuino on Hakster.io](https://www.hackster.io/beejayf/somfyduino-io-3d8283) I bypassed the protocol using an original 4-channel-remote.
+With the help of may examples but most important [Beejayf's project SomfyDuino on Hackster.io](https://www.hackster.io/beejayf/somfyduino-io-3d8283) I bypassed the protocol using an original 4-channel-remote.
 The way it works is that pussing a button on the remote is faked by connecting wires to the remote-buttons.
 The wires are reused from an old desktop-PSU; enough wires combined in a bundle.
 
@@ -25,12 +25,35 @@ In my house I plan to put a domotica-sensor in each room, so I add some other se
 
 Using ESPHome on the ESP has the advantage it is easy connected to my domotica-software HomeAssistant. In HomeAssistant I made some automations and scripts to push a message to the ESP. 
 
+### Needed
+
+- Somfy remote 				(like the Somfy SITUO 5 IO Pure)
+- cable with 6 wires		(i cut it from an old Desktop-PSU)
+- ESP8266 or ESP32    		(like the WemosD1 mini Pro)
+- [ESPHome software](https://esphome.io/)  		(to program the ESP8266)
+- [HomeAssistant software](https://www.home-assistant.io/)	(to control the screens, on any hardware)
+- Solder board, tin, solder iron
+- 4 20Ohm resistors
+- 4 small & simple LED's 
+- 6 wire connectors with screw (to connect the cable to the solderboard)
+- extra hardware like an RGB-led, PIR and buzzer are optional off course
+
 ### The correct remote
 
-- new version smd = hard to solder
-- old version better to solder
-- 4 channels, 3 screens. fifth setting ALL (not used)
-- SMD leds on remote giving channel information
+The old remote, the Somfy SITUO 5 IO Pure is easier to solder wires to.
+The new remote has smd components were soldering wires is more advanced
+The remote had 4 channels. There are SMD-leds on the remote (on th eleft upper corner) to give information which screen is adressed.
+My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. They are not used in this project.
+
+### Pictures of the remote
+
+<div align="center">
+  <kbd>
+    <img src="images/Somfy-SITUO-5-IO-PURE-L.jpg" />
+  </kbd>
+    
+  Somfy SITUO 5 IO Pure
+</div>
 
 <div align="center">
   <kbd>
@@ -54,14 +77,6 @@ Using ESPHome on the ESP has the advantage it is easy connected to my domotica-s
   </kbd>
     
   Remote unpacked from case
-</div>
-
-<div align="center">
-  <kbd>
-    <img src="images/SomfyIO_ESPHome_AGvdBerg_1-Remote te modern_1.jpg" />
-  </kbd>
-    
-  Newest remote: Somfy Situo 5 IO
 </div>
 
 <div align="center">
@@ -199,6 +214,8 @@ and
 ```
 
 Emulate a button
+ - conform [explanation in ESPHome documentation](https://esphome.io/components/button/index.html)
+ 
 ```
 # button functionality
 # Button is pushed low for 0,5 sec
@@ -322,7 +339,7 @@ Thanks to all who helped inspire this project
 	 - [on Hackster.io](https://www.hackster.io/beejayf/somfyduino-io-3d8283)
 - [Tim Alston on twitter (only some pictures)](https://mobile.twitter.com/TimAlston/status/1340330866023813120)
 - [Mention on dutch 'Tweakers' forum of Beejayf's SomfyDuino](https://gathering.tweakers.net/forum/list_messages/1982854)
-- [First try and asking for help of Celaeno1 & Hakan using OpenHab)(https://community.openhab.org/t/solved-somfy-io-rollershutter-motors-which-system-is-best-for-using-with-oh2/81929/12)
+- [First try and asking for help of Celaeno1 & Hakan using OpenHab](https://community.openhab.org/t/solved-somfy-io-rollershutter-motors-which-system-is-best-for-using-with-oh2/81929/12)
 - [Github repro of smslabsbr for SomfyRTS](https://github.com/dmslabsbr/esphome-somfy)
 - [Github repro of imicknl for connection with the use of Tohama](https://github.com/imicknl/ha-tahoma)
 
@@ -331,7 +348,7 @@ Thanks to all who helped inspire this project
 - [x] pinout connection 
 - [x] ESPHome code
 - [x] References to found examples
-- [ ] more explaining code
+- [ ] more explaining code, readable story to new user
 - [ ] upload yaml files
 - [ ] share this github on social media 
 - [ ] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
