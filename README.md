@@ -104,18 +104,22 @@ My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. The
  - Somfy "My" / Hold to ESP - GPIO12 - D6
  - Somfy "DOWN"      to ESP - GPIO13 - D7
  
- Hardware each pin is 'active high' and not only connected to somfy but also by small blue LED and xx Ohm resistor to GND
+ Hardware each pin is 'active high' and not only connected to somfy but also by small blue LED and 20 Ohm resistor to GND
  In ESPHome each the four pins gets a switch, each switch becomes a button
  By activating the button the pin & switch is set low for 500ms and then set high again...thus simulating a short hardware button press on the remote
  In HomeAssistant we see all switches and buttons
  
-#### Other connections
+#### Other connections - optional & has nothing to do with the Somfy Screens
 
 RGB LED (PL9823)
- - (short) pin 1 Data In (DI) to ESP - GPIO00 = D3
- - (short) pin 2 V+ (5V)      to ESP - 5V
- - (long)  pin 3 GND          to ESP - GND
- - (long)  pin 4 Data Out (DO) not connected
+
+| RGB LED (PL9823)           | ESP - WemosD1 mini Pro                                                                    |
+|----------------------------|-------------------------------------------------------------------------------------------|
+| (short) pin 1 Data In (DI) | TGPIO00 = D3                                          |
+| (short) pin 2 V+ (5V)                  | ESP - 5V                                 |
+| (long)  pin 3 GND                | ESP - GND |
+| (long)  pin 4 Data Out (DO)           | not connected |
+
  - has chipset WS2811
  - In ESPHome 'fastled_clockless' needed & old framework 2.7.3 needed
  
