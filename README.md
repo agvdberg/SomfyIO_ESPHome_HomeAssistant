@@ -426,6 +426,30 @@ api:
 - scripts to 'push' more buttons in a row
 - automation when to lower the screens
 
+### What doesn't work
+
+#### No Feedback
+This whole project has one drawback; there is no feedback.
+Off course we can see or hear the status and change of the screens when we are at home.
+The remote has four leds indicating which screen/channel is about to adressed.
+Pressing the 'Channel'-button changes the channel from 1 to 2 to 3 to 4 to 'ALL' and back to 1.
+
+#### Channel to be adressed
+Sometimes the remote is reset. And sometimes a pulse is generated. In testing fase this resulted sometimes to move one screen down. In the middle of the night. Of the master bedroom. So much for 'Family Acceptance Factor'.
+My solution was to set the default channel to "ALL". In my house we have three screens and I do not have all the screens adressed to the 'ALL'-changes. If in any case a 'down'-command is generated non of my screens listen.
+
+#### Manual control of the screens
+My using the normal remote the screens can be changed in position. The project and HomeAssistant have no way to know what the position of the screen is.
+This is realy not a big problem; on a 'down' command when the screen is already down it does nothing and doesn't smoke.
+
+#### Is the command well deployed?
+Without feedback we can only assume (and test) if the command is resulting in the correct effect.
+One solution in my software (in HomeAssistant) is to always put the channel of the remote in the 'ALL' position. With a command to put a screen down i allways switch the channels like it is in the 'all' position.
+So to move for screen 3 i always start by 'pushing' the channel button four times  (first one is to activate the remote, learned by testing).
+Another solution is to put a webcam (like one of the ESP32-CAM's i have laying around here) on the screen. But i am not fond on putting a camera in a bedroom. Nor does my partner ;-) 
+The current workaround is to periodically check the status of the remote, if it is in the 'ALL'-position. The result when it is not that the wrong screen or no screen is moved at command.
+The way to fix a situation; push the digital 'Channel' button a few times, while watching the hardware and the visable SMD-leds. So tip when building a 3D-case: let the SMD-leds on the remote be visable.
+
 ## Development to a working situation
 
 ### Breadboard try-out
@@ -509,7 +533,7 @@ Thanks to all who helped inspire this project
 - [x] pinout connection 
 - [x] ESPHome code
 - [x] References to found examples
-- [ ] more explaining code, readable story to new user
+- [x] more explaining code, readable story to new user
 - [ ] upload yaml files
 - [ ] share this github on social media 
 - [ ] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
