@@ -260,10 +260,15 @@ button:
 #### OPTIONAL - Other connections - This has nothing to do with the Somfy Screens
 
 The other perifials have nothing to do with the Somfy Screens.
-They are added by me to support extra information, room sensors and/or just for fun
+They are added by me to support extra information, room sensors and/or just for fun.
++ RGB Led
++ Internal Led
++ LDR - light resistor
++ PIR - Motion sensor
++ Buzzer
 
 
-##### RGB LED (PL9823)
+##### ==> RGB LED (PL9823)
 
 | RGB LED (PL9823)            | ESP - WemosD1 mini Pro |
 |-----------------------------|------------------------|
@@ -275,7 +280,7 @@ They are added by me to support extra information, room sensors and/or just for 
  - has chipset WS2811
  - In ESPHome 'fastled_clockless' & old framework 2.7.3 needed  (see code)
  
-code in ESPHome
+code in ESPHome:
 ```
 esp8266:
   board: d1_mini_pro
@@ -295,14 +300,14 @@ light:
     name: ${devicename} RGBled
 ```
 
-###### Internal LED (in WemosD1 mini Pro)
+##### ==> Internal LED (in WemosD1 mini Pro)
 
  - connected to GPIO02 = D4
  - because we can use it
  - extra possibility to test function 'Home Assistant switch' 
  - also used to give startup information, before connection to HomeAssistant is established
 
-code in ESPHome
+code in ESPHome:
 ```
 esphome:
   name: wemosd1-somfy
@@ -330,8 +335,10 @@ switch:
 
 ```
  
-##### LDR - resistor
+##### ==> LDR - resistor
 
+Connections:
+```
    +------ 3V3
    |
    R = 20kOhm
@@ -341,10 +348,11 @@ switch:
    LDR
    |
    +------ GND
+```
 
  - This is a voltage-divider. Max input of A0 is 1V
 
-code in ESPHome
+code in ESPHome:
 ```
 sensor:
   - platform: resistance
@@ -361,7 +369,7 @@ sensor:
     name: ${devicename} A0 reading
 ```
 
-##### PIR Motion sensor 
+##### ==> PIR Motion sensor 
 
 | PIR             | ESP - WemosD1 mini Pro |
 |-----------------|------------------------|
@@ -369,7 +377,7 @@ sensor:
 | pin 2 GND       | GND                    |
 | pin 3 VCC       | 3V3                    |
 
-code in ESPHome
+code in ESPHome:
 ```
 binary_sensor:
   # PIR motion detection
@@ -380,7 +388,7 @@ binary_sensor:
 ```
 
 
-##### Buzzer
+##### ==> Buzzer
  
 | PIR         | ESP - WemosD1 mini Pro |
 |-------------|------------------------|
@@ -421,10 +429,133 @@ api:
 
 ### HomeAssistant code
 
-- entities from ESP visable
-- push button - watching the remote
-- scripts to 'push' more buttons in a row
-- automation when to lower the screens
+#### Entities from ESPHome device visable in HomeAssistant
+
+By using ESPHome these entities are available in HomeAssistant:
+```
+# The pins
+  - switch.somfy_channel_rx_gpio3
+  - switch.somfy_down_d7_gpio13
+  - switch.somfy_stop_d6_gpio12
+  - switch.somfy_up_d5_gpio14
+
+# The buttons
+  - button.somfy_button_channel_rx_io3
+  - button.somfy_button_down_d7_io13
+  - button.somfy_button_stop_d6_io12
+  - button.somfy_button_up_d5_io14
+```
+
+The other sensors as entities
+```
+# Internal LED
+  - button.somfy_iled
+  - switch.somfy_internal_led_2
+# RGBLed
+  - light.somfy_rgbled
+# LDR
+  - sensor.somfy_a0_reading
+  - sensor.somfy_ldr
+# PIR
+  - binary_sensor.somfy_motion
+  
+# Wifi information
+  - sensor.somfy_connected_ssid
+# Other Device Info
+  - sensor.somfy_ip_address
+  - sensor.somfy_wifi_signal
+  - sensor.somfy_latest_scan
+  - sensor.somfy_mac_wifi
+  - sensor.somfy_esphome_version
+  - sensor.somfy_uptime
+  - sensor.somfy_uptime_human_readable
+  - sensor.uptime_human_readable
+  - button.somfy_esphome_restart_device
+
+# Connected? (used in automations)
+  - binary_sensor.somfy_status
+```
+
+<b>To test en low level control the communication:</b>
+Remember: you have to see the on board LEDs to get feedback and to see it's working
+
+<div align="center">
+  <kbd>
+    <img src="images/Lovelace_Somfy status.jpg" />
+  </kbd>
+    
+  See if the connection is ok  (in wifi-range?)
+</div>
+
+```
+type: entity
+entity: binary_sensor.somfy_status
+state_color: true
+```
+
+<div align="center">
+  <kbd>
+    <img src="images/Lovelace_Somfy pin access.jpg" />
+  </kbd>
+    
+  Control ESP-pins high/low
+</div>
+
+```
+type: entities
+entities:
+  - entity: switch.somfy_internal_led_2
+  - entity: switch.somfy_channel_rx_gpio3
+    name: pin CHANNEL
+  - entity: switch.somfy_up_d5_gpio14
+    name: pin UP
+  - entity: switch.somfy_stop_d6_gpio12
+    name: pin MY
+  - entity: switch.somfy_down_d7_gpio13
+    name: pin DOWN
+```
+
+<div align="center">
+  <kbd>
+    <img src="images/Lovelace_Somfy buttons.jpg" />
+  </kbd>
+    
+  Simulate button push
+</div>
+
+```
+type: glance
+show_name: true
+show_icon: true
+show_state: false
+entities:
+  - entity: button.somfy_button_channel_rx_io3
+    name: CHANNEL
+  - entity: button.somfy_button_up_d5_io14
+    name: UP
+  - entity: button.somfy_button_stop_d6_io12
+    name: MY
+  - entity: button.somfy_button_down_d7_io13
+    name: DOWN
+```
+
+%% adding scripts: code & screengrab %%
+
+%% extra: custom-button-card %% 
+
+
+<b>Result = move screen(s) by HomeAssistant-user</b>
+
+
+#### Automating screen movement
+
+%% list of booleans %%
+%% pseudo-code of automation %%
+
+Test: input_boolean & simulate action
+
+Extra: not automated = prevention for scripts too fast operated. The solution could be to put it all in one script and/or one automation. To program that will be to time consuming for the perpose of my single house. And there are limits for the booleans that can not result in taking place within the minute. I think. When it fails i should fix it by putting it all back in to the good position using manual override.
+
 
 ### What doesn't work
 
@@ -534,6 +665,7 @@ Thanks to all who helped inspire this project
 - [x] ESPHome code
 - [x] References to found examples
 - [x] more explaining code, readable story to new user
+- [ ] add home assistant code & screens
 - [ ] upload yaml files
 - [ ] share this github on social media 
 - [ ] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
