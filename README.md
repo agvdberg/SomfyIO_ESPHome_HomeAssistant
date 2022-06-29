@@ -25,6 +25,7 @@ In my house I plan to put a domotica-sensor in each room, so I add some other se
 
 Using ESPHome on the ESP has the advantage it is easy connected to my domotica-software HomeAssistant. In HomeAssistant I made some automations and scripts to push a message to the ESP. 
 
+------------------------
 
 ## Setup
 
@@ -58,6 +59,7 @@ The new remote has smd components were soldering wires is more advanced
 The remote had 4 channels. There are SMD-leds on the remote (on th eleft upper corner) to give information which screen is adressed.
 My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. They are not used in this project.
 
+------------------------
 
 ### The way it works
 
@@ -119,6 +121,7 @@ Extra bonus is that i see on the blue led if the pinout is high or low.
 - Wifi-access
 - Enough IO-ports
 
+------------------------
 
 ### Connections 
 
@@ -256,6 +259,8 @@ button:
       - delay: 500ms 
       - switch.turn_on: pin13    # pin=on => output high
 ```
+
+------------------------
 
 #### OPTIONAL - Other connections - This has nothing to do with the Somfy Screens
 
@@ -427,6 +432,8 @@ api:
 
 ```
 
+------------------------
+
 ### HomeAssistant code
 
 #### Entities from ESPHome device visable in HomeAssistant
@@ -485,6 +492,7 @@ Remember: you have to see the on board LEDs to get feedback and to see it's work
   </kbd>
     
   See if the connection is ok  (in wifi-range?)
+  My language is Dutch
 </div>
 
 ```
@@ -638,6 +646,8 @@ The way to fix a situation; push the digital 'Channel' button a few times, while
  - screen down after power loss: default at 'all channels'
  - connection lost; LDR=0 -> Calculated Lux=MAX -> trouble with graphics
 
+------------------------
+
 ## Back matter
 
 ### Legal disclaimer
@@ -658,6 +668,11 @@ Thanks to all who helped inspire this project
 - [First try and asking for help of Celaeno1 & Hakan using OpenHab](https://community.openhab.org/t/solved-somfy-io-rollershutter-motors-which-system-is-best-for-using-with-oh2/81929/12)
 - [Github repro of smslabsbr for SomfyRTS](https://github.com/dmslabsbr/esphome-somfy)
 - [Github repro of imicknl for connection with the use of Tohama](https://github.com/imicknl/ha-tahoma)
+
+### Known issues
+
+- No feedback on actual screen status -> go look at the screens
+- No feedback on channel position -> go look at the smd-leds on the soldered remote
 
 ### To-do in this Github explaination
 
