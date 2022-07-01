@@ -501,6 +501,9 @@ entity: binary_sensor.somfy_status
 state_color: true
 ```
 
+
+
+
 <div align="center">
   <kbd>
     <img src="images/Lovelace_Somfy pin access.jpg" />
@@ -522,6 +525,9 @@ entities:
   - entity: switch.somfy_down_d7_gpio13
     name: pin DOWN
 ```
+
+
+
 
 <div align="center">
   <kbd>
@@ -547,25 +553,352 @@ entities:
     name: DOWN
 ```
 
-%% adding scripts: code & screengrab %%
+#### Scripts to control the screens
 
-%% extra: custom-button-card %% 
+I added some comment code to explain, which will not last in yaml->UI conversion in HomeAssistant.
+Almost the same script is made to control all my three screens.
 
+```
+alias: SOMFY 1 screen down
+sequence:
+  # Function: play a beep on the buzzer; easy signal for me testing it by standing next to the device
+  - service: script.somfy_play_double_beep
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+	  
+  # simulate two presses of the CHANNEL button, first is activation, second changes from 'ALL' to the first channel/screen.
+  - repeat:
+      count: 2
+      sequence:
+        - service: button.press
+          data: {}
+          target:
+            entity_id: button.somfy_button_channel_rx_io3
+			
+		# Every time one second delay to give the device time & to follow it during testing. Speed isn't an issue here.
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 1
+            milliseconds: 0
+			
+  # Simulate the DOWN button press
+  - service: button.press
+    data: {}
+    target:
+      entity_id: button.somfy_button_down_d7_io13
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+	  
+  # simulate five CHANNEL-button presses to get back to the 'ALL' position
+  - repeat:
+      count: '5'
+      sequence:
+        - service: button.press
+          data: {}
+          target:
+            entity_id: button.somfy_button_channel_rx_io3
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 1
+            milliseconds: 0
 
-<b>Result = move screen(s) by HomeAssistant-user</b>
+  # Play a double beep on the buzzer to hear that the script is ready			
+  - service: script.somfy_play_double_beep
+    data: {}
+mode: single
+icon: mdi:archive-arrow-down
+
+```
+
+By the way; the double beep is activated with this script:
+```
+alias: SOMFY Play double beep
+sequence:
+  - service: esphome.wemosd1_somfy_play_rtttl
+    data:
+      song_str: two short:d=4,o=5,b=100:16e6,16e6
+mode: single
+icon: mdi:cellphone-sound
+
+```
+
+#### Active scripts from HomeAssistant
+
+We can put the scripts on the HomeAssistant (lovelace) screen:
+
+<div align="center">
+  <kbd>
+    <img src="images/Lovelace_Somfy buttons 1 up down.jpg" />
+  </kbd>
+    
+  Push-button to activate a script
+</div>
+
+```
+show_name: true
+show_icon: true
+type: button
+tap_action:
+  action: toggle
+entity: script.somfy_screen_1_down
+show_state: true
+name: Script Screen 2 DOWN
+```
+
+or.... with custom:button-card  (see [Github](https://github.com/custom-cards/button-card) a changeble script
+ - we change the script to run depending on its state
+ - state is defined with a 'boolean-helper'
+ - therefore update of this boolean-helper must be added to all scripts
+ - for nice and easy looking we change the icon, name and color depending on its state
+But you can figure this out yourself
+
+<div align="center">
+  <kbd>
+    <img src="images/Lovelace_Somfy buttons advanced 1 up down" />
+  </kbd>
+    
+  Advanced push buttons
+</div>
+
+```
+type: custom:button-card
+name: Screen 1
+entity: input_boolean.somfy_screen_1_down
+tap_action:
+  action: call-service
+  service: script.turn_on
+  service_data:
+    entity_id: |
+      [[[
+        if (entity.state == 'on')
+          return "script.somfy_screen_1_up";
+        else
+          return "script.somfy_screen_1_down";
+      ]]]
+state:
+  - value: 'off'
+    icon: mdi:archive-arrow-up-outline
+    name: 1 is open
+    styles:
+      icon:
+        - color: lightgray
+  - value: 'on'
+    name: 1 is closed
+    styles:
+      icon:
+        - color: magenta
+```
+
+Or... all screens at once
+
+<div align="center">
+  <kbd>
+    <img src="images/Lovelace_Somfy buttons all up down.jpg" />
+  </kbd>
+    
+  Active all screens at once
+</div>
+
+```
+type: custom:button-card
+entity: binary_sensor.somfy_status
+icon: mdi:archive-arrow-up-outline
+name: ALL-UP
+tap_action:
+  action: call-service
+  service: script.turn_on
+  service_data:
+    entity_id: script.somfy_1_2_3_up
+styles:
+  icon:
+    - color: white
+  name:
+    - font-size: 12px
+    - color: white
+state:
+  - value: 'on'
+    styles:
+      icon:
+        - color: yellow
+  - value: 'off'
+    styles:
+      icon:
+        - color: red
+```
 
 
 #### Automating screen movement
 
-%% list of booleans %%
-%% pseudo-code of automation %%
+To turn the screens automaticly down we use the binary_sensor which we defined earlier. It is a combination of all the factors to determen if we want the screens down in the first place.
 
-Test: input_boolean & simulate action
+##### Simplified / basic automation
 
-Extra: not automated = prevention for scripts too fast operated. The solution could be to put it all in one script and/or one automation. To program that will be to time consuming for the perpose of my single house. And there are limits for the booleans that can not result in taking place within the minute. I think. When it fails i should fix it by putting it all back in to the good position using manual override.
+This is the basic automation; if the boolean-helper is true the script is run.
+We include a delay of 2 minutes to prevent fast down and up - commands; 'Family Acceptance Factor'
+The automation also checks if the hardware is available, in which case a message to my mobile is stated in stead
+
+```
+alias: SCREENS Down
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.screen_wanted_down
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+	  
+action:
+  - if:
+	  # We can only activate if we have a working connection
+      - condition: state
+        entity_id: binary_sensor.somfy_status
+        state: 'on'
+    then:
+      - service: script.somfy_1_2_3_down
+        data: {}
+    else:
+      - service: notify.mobile_app_mymobile
+        data:
+          title: Screens unavailable
+          message: >-
+            Connection with SomfyWemos is lost so can't change screen position
+mode: single
+```
 
 
-### What doesn't work
+
+
+##### Extended / full automation
+
+In real live i made the automation much complexer. 
+ - prevent real change in case of test
+ - turn RGB light on the the device according to its status
+ - selective 'turn of automation' for the family in a boolean-helper
+
+What i didn't do:
+<b>multi-script prevention</b>
+I choose not to combine the down- and up-scripts, in fact combine ALL the scripts in to one big script. It can be a solution to prevent scripts to fast operating, or even simultaneously. To program that will be to time consuming for the perpose of my single house. And there are limits for the booleans that can not result in taking place within the minute. I think. When it fails i should fix it by putting it all back in to the good position using manual override.
+
+
+DOWN
+
+```
+alias: SCREENS Down
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.screen_wanted_down
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+	  
+# extra helper to show on dashboard and prevent double-tab	  
+condition:
+  - condition: state
+    entity_id: input_boolean.screen_down
+    state: 'off'
+	
+action:
+  - if:
+	  # We can only activate if we have a working connection
+      - condition: state
+        entity_id: binary_sensor.somfy_status
+        state: 'on'
+    then:
+	
+	  # Turn RGB led in color magenta
+      - service: light.turn_on
+        data:
+          rgb_color:
+            - 171
+            - 5
+            - 204
+        target:
+          entity_id: light.somfy_rgbled
+		  
+	  # Set helper
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.screen_down
+		  
+	  # Play extra beep on device
+      - service: script.somfy_play_double_beep
+        data: {}
+		
+	  # Test mode available, also used to 'turn of automation' for the family	
+      - if:
+          - condition: state
+            entity_id: input_boolean.somfy_real_change
+            state: 'on'
+        then:
+
+		  # Special operation: only screens 1 and 3 and leave screen 2 alone...special script needed
+          - if:
+              - condition: state
+                entity_id: binary_sensor.screen_ignore_screen2
+                state: 'on'
+            then:
+
+			  # Put all the screens down
+              - service: script.somfy_1_2_3_down
+                data: {}
+				
+			  # And notify me on my mobile... still testing phase
+              - service: notify.mobile_app_mymobile
+                data:
+                  title: Screens down
+                  message: >-
+                    ALL screens down at {{ states('sensor.datetime_formatted') }}.
+            else:
+			
+			  # Special script: only screens 1 and 3 down
+              - service: script.somfy_1_3_down
+                data: {}
+
+			  # And notify me on my mobile... still testing phase
+              - service: notify.mobile_app_mymobile
+                data:
+                  title: Screens 1+3 down
+                  message: >-
+                    Screens 1+3 down at {{ states('sensor.datetime_formatted') }}
+        else:
+		
+		  # It is a test; no screens touched, only message to my phone
+          - service: notify.mobile_app_mymobile
+            data:
+              title: Screen TEST down
+              message: at {{ states('sensor.datetime_formatted') }}.
+    else:
+	
+	  # Somfy / ESPHome / ESP-device not available
+      - service: notify.mobile_app_mymobile
+        data:
+          title: Screens NOT down
+          message: >-
+            Connection with SomfyWemos lost so no change DOWN at {{ states('sensor.datetime_formatted') }}.
+mode: single
+```
+
+
+<b>Result = move screen(s) by HomeAssistant when needed</b>
+
+
+
+### What doesn't work / Known issues
 
 #### No Feedback
 This whole project has one drawback; there is no feedback.
@@ -669,10 +1002,6 @@ Thanks to all who helped inspire this project
 - [Github repro of smslabsbr for SomfyRTS](https://github.com/dmslabsbr/esphome-somfy)
 - [Github repro of imicknl for connection with the use of Tohama](https://github.com/imicknl/ha-tahoma)
 
-### Known issues
-
-- No feedback on actual screen status -> go look at the screens
-- No feedback on channel position -> go look at the smd-leds on the soldered remote
 
 ### To-do in this Github explaination
 
@@ -680,9 +1009,9 @@ Thanks to all who helped inspire this project
 - [x] ESPHome code
 - [x] References to found examples
 - [x] more explaining code, readable story to new user
-- [ ] add home assistant code & screens
-- [ ] upload yaml files
-- [ ] share this github on social media 
+- [x] add home assistant code & screens
+- [ ] ~~upload yaml files~~  i use edited sections to be an example
+- [ ] share this github on social media: twitter, reddit, HA-forum
 - [ ] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
 
 ### To-do
