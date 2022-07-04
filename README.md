@@ -43,13 +43,28 @@ Using ESPHome on the ESP has the advantage it is easy connected to my domotica-s
 - extra hardware like an LDR, RGB-led, PIR and buzzer are optional off course
 
 
+### Needed Knowledge of, or find out yourself
+
+This instruction-blog assumes the knowledge of the following
+ - Somfy Cover Screens with a remote and manual to program the remote to the manual. [Search for information](https://duckduckgo.com/?q=somfy+io-homecontrol)
+ - Devices with a ESP8266 or ESP32-chip [Search for information](https://duckduckgo.com/?q=esp8266+esp32&t=brave&ia=web)
+ - ESPHome firmware for ESP-devices [ESPHome main page](https://esphome.io/)
+ - Programming an ESP-device with USB or FTDI [Search for information](https://duckduckgo.com/?q=esp8266+ftdi+programming&t=brave&ia=web)
+ - Buying small elektronics [like resistors](https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1311&_nkw=resistor+assortment&_sacat=0)
+ - Getting a Somfy Remote [Search online](https://duckduckgo.com/?q=somfy+io+remote&t=brave&ia=web)
+ - Soldering components [A lot of information online](https://duckduckgo.com/?q=how+to+solder&t=brave&ia=web)
+ - HomeAssistant [Starting point](https://www.home-assistant.io/)
+ - Building User Interfaces and automations in HomeAssistant [A lot on YouTube](https://www.youtube.com/results?search_query=home+assistant+beginners+guide)
+ - Try and keep trying
+
+
 ### Before soldering
 
 You must program the Somfy remote before taking it out of the case and doing any soldering.
 Program the remote to use your screens according to the manual.
 Now the remote is communicating to the right screen.
 You can use the fysical buttons 'channel', 'up', 'down' and 'my'/stop
-The 'program'-button on the back of the remote is not connected and not usable after soldering
+The 'program'-button on the back of the remote is not connected and not usable after soldering.
 
 
 ### The correct remote
@@ -132,9 +147,9 @@ Extra bonus is that i see on the blue led if the pinout is high or low.
 | Battery(+)    | 3V3                    |
 | Battery(-)    | GND                    |
 | "SELECT"      | GPIO03 = RX            |
-| "UP"          | GPIO14 - D5            |
-| "My" / Hold   | GPIO12 - D6            |
-| "DOWN"        | GPIO13 - D7            |
+| "UP"          | GPIO14 = D5            |
+| "My" / Hold   | GPIO12 = D6            |
+| "DOWN"        | GPIO13 = D7            |
  
  Hardware each pin is 'active high' and not only connected to somfy but also by small blue LED and 200 Ohm resistor to GND
  In ESPHome each the four pins gets a switch, each switch becomes a button
@@ -553,6 +568,8 @@ entities:
     name: DOWN
 ```
 
+------------------------
+
 #### Scripts to control the screens
 
 I added some comment code to explain, which will not last in yaml->UI conversion in HomeAssistant.
@@ -631,6 +648,8 @@ icon: mdi:cellphone-sound
 
 ```
 
+------------------------
+
 #### Active scripts from HomeAssistant
 
 We can put the scripts on the HomeAssistant (lovelace) screen:
@@ -663,7 +682,7 @@ But you can figure this out yourself
 
 <div align="center">
   <kbd>
-    <img src="images/Lovelace_Somfy buttons advanced 1 up down" />
+    <img src="images/Lovelace_Somfy buttons advanced 1 up down.jpg" />
   </kbd>
     
   Advanced push buttons
@@ -698,7 +717,7 @@ state:
         - color: magenta
 ```
 
-Or... all screens at once
+All screens at once
 
 <div align="center">
   <kbd>
@@ -735,6 +754,7 @@ state:
         - color: red
 ```
 
+------------------------
 
 #### Automating screen movement
 
@@ -777,6 +797,7 @@ mode: single
 ```
 
 
+------------------------
 
 
 ##### Extended / full automation
@@ -896,6 +917,7 @@ mode: single
 
 <b>Result = move screen(s) by HomeAssistant when needed</b>
 
+------------------------
 
 
 ### What doesn't work / Known issues
@@ -1010,7 +1032,8 @@ Thanks to all who helped inspire this project
 - [x] References to found examples
 - [x] more explaining code, readable story to new user
 - [x] add home assistant code & screens
-- [ ] ~~upload yaml files~~  i use edited sections to be an example
+- [x] ~~upload yaml files~~  i use edited sections to be an example
+- [ ] correct most of the wrong written English and other misspellings
 - [ ] share this github on social media: twitter, reddit, HA-forum
 - [ ] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
 
