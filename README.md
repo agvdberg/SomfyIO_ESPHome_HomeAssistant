@@ -1034,8 +1034,8 @@ Thanks to all who helped inspire this project
 - [x] add home assistant code & screens
 - [x] ~~upload yaml files~~  i use edited sections to be an example
 - [ ] correct most of the wrong written English and other misspellings
-- [ ] share this github on social media: twitter, reddit, HA-forum
-- [ ] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
+- [x] share this github on social media: twitter, reddit, HA-forum
+- [x] share dutch version on [personal website (dutch)](www.ecozonnewoning.nl)
 
 ### To-do
 
