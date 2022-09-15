@@ -14,7 +14,7 @@ Using a Somfy remote connected to an ESP8266 with ESPHome software we can now co
 Somfy (screens) have [two communication protocols](https://www.somfy.nl/over-somfy/technologieen-en-compatibiliteit); RTS using RFX-433,92 Mhz and [IO-homecontrol](https://www.somfy.nl/ondersteuning/somfy-motoren/io-homecontrol) using encrypted communication. When I bought my screens I choose SomfyIO. My house has three screens; each with it's own remote.
 Currently it is not possible to communicate directly (to pretend using a remote).
 
-With the help of may examples but most important [Beejayf's project SomfyDuino on Hackster.io](https://www.hackster.io/beejayf/somfyduino-io-3d8283) I bypassed the protocol using an original 4-channel-remote.
+With the help of many examples but most important [Beejayf's project SomfyDuino on Hackster.io](https://www.hackster.io/beejayf/somfyduino-io-3d8283) I bypassed the protocol using an original 4-channel-remote.
 The way it works is that pussing a button on the remote is faked by connecting wires to the remote-buttons.
 The wires are reused from an old desktop-PSU; enough wires combined in a bundle.
 
@@ -47,15 +47,15 @@ Using ESPHome on the ESP has the advantage it is easy connected to my domotica-s
 
 This instruction-blog assumes the knowledge of the following
  - Somfy Cover Screens with a remote and manual to program the remote to the manual. [Search for information](https://duckduckgo.com/?q=somfy+io-homecontrol)
- - Devices with a ESP8266 or ESP32-chip [Search for information](https://duckduckgo.com/?q=esp8266+esp32&t=brave&ia=web)
- - ESPHome firmware for ESP-devices [ESPHome main page](https://esphome.io/)
- - Programming an ESP-device with USB or FTDI [Search for information](https://duckduckgo.com/?q=esp8266+ftdi+programming&t=brave&ia=web)
- - Buying small elektronics [like resistors](https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1311&_nkw=resistor+assortment&_sacat=0)
- - Getting a Somfy Remote [Search online](https://duckduckgo.com/?q=somfy+io+remote&t=brave&ia=web)
- - Soldering components [A lot of information online](https://duckduckgo.com/?q=how+to+solder&t=brave&ia=web)
- - HomeAssistant [Starting point](https://www.home-assistant.io/)
- - Building User Interfaces and automations in HomeAssistant [A lot on YouTube](https://www.youtube.com/results?search_query=home+assistant+beginners+guide)
- - Try and keep trying
+ - Devices with a ESP8266 or ESP32-chip. [Search for information](https://duckduckgo.com/?q=esp8266+esp32&t=brave&ia=web)
+ - ESPHome firmware for ESP-devices. [ESPHome main page](https://esphome.io/)
+ - Programming an ESP-device with USB or FTDI. [Search for information](https://duckduckgo.com/?q=esp8266+ftdi+programming&t=brave&ia=web)
+ - Buying small elektronics. [like resistors](https://www.ebay.com/sch/i.html?_from=R40&_trksid=p2380057.m570.l1311&_nkw=resistor+assortment&_sacat=0)
+ - Getting a Somfy Remote. [Search online](https://duckduckgo.com/?q=somfy+io+remote&t=brave&ia=web)
+ - Soldering components. [A lot of information online](https://duckduckgo.com/?q=how+to+solder&t=brave&ia=web)
+ - HomeAssistant. [Starting point](https://www.home-assistant.io/)
+ - Building User Interfaces and automations in HomeAssistant. [A lot on YouTube](https://www.youtube.com/results?search_query=home+assistant+beginners+guide)
+ - Try and keep trying !
 
 
 ### Before soldering
@@ -69,19 +69,19 @@ The 'program'-button on the back of the remote is not connected and not usable a
 
 ### The correct remote
 
-The old remote, the Somfy SITUO 5 IO Pure is easier to solder wires to.
-The new remote has smd components were soldering wires is more advanced
-The remote had 4 channels. There are SMD-leds on the remote (on th eleft upper corner) to give information which screen is adressed.
-My 3 screens are each equiped with an SITUO 1 IO Pure-remote, for each room. They are not used in this project.
+The old remote, the Somfy SITUO 5 IO Pure, is easier to solder wires to.
+The new remote has smd components were soldering wires is more advanced.
+The remote had 4 channels. There are SMD-leds on the remote (on the left upper corner) to give information which screen is adressed.
+My 3 screens are each equiped with an SITUO 1 IO Pure-remote, one for each room. They are not used in this project.
 
 ------------------------
 
 ### The way it works
 
-The way the remote is used is to simulate a button press (and let the remote do all the srambled communications)
+The way the remote is used is to simulate a button press (and let the remote do all the scrambled communications).
 The button press is simulated by connecting the 'copper circle' to ground.
-On the remote-board the dot in the middle of the copper circle is connected to ground
-That means on no-press the pin connected to the copper circle must kept high
+On the remote-board the dot in the middle of the copper circle is connected to ground.
+That means on no-press the pin connected to the copper circle must kept high.
 I use a high resistor (including a small blue led) to connect the high-pin to ground. It draws only a few mA.
 My ESP is connected to normal 230V->5V plug so i don't need to care about draining any battery.
 Extra bonus is that i see on the blue led if the pinout is high or low.
